@@ -27,5 +27,5 @@ then "altrefcontrol-0.1.1.xpi" and "update.rdf" are generated.
 
 ## License
 
-Copyright (c) 2009 [bellbind](http://twitter.com/bellbind)
+Copyright (c) 2011 [bellbind](http://twitter.com/bellbind)
 Released under MPL 1.1/GPL 2.0/LGPL 2.1 licenses.
