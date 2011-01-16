@@ -2,8 +2,6 @@
 
 A Firefox addon for replacing referer like refControl addon.
 
-- Main features are implemented as userChrome.js scripts
-
 ## features
 
 - Switching Referers
@@ -19,6 +17,10 @@ e.g.:
 
 then "altrefcontrol-0.1.1.xpi" and "update.rdf" are generated.
 
+
+## Reference
+
+- [userChrome.js script version](https://gist.github.com/777814) (ver 0.1 is just packaged as xpi)
 
 ## License
 
