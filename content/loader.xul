@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<overlay
+    id="altrefcontrol"
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <script src="refcontrol.uc.js" />
+  <script src="refcontrolui.uc.js" />
+</overlay>
