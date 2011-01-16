@@ -9,6 +9,12 @@ A Firefox addon for replacing referer like refControl addon.
 - Use refControl addon setting
 - Context menu UI
 
+## Install
+
+Download latest altrefcontrol-x.y.z.xpi file from 
+[download page](https://github.com/bellbind/altrefcontrol/downloads)
+(it requires permission to allow install from github.com)
+
 ## release update and package build
 
 After edit codes. update "em:version" in "install.rdf". 
@@ -17,7 +23,6 @@ e.g.:
     ./build.sh 0.1.1
 
 then "altrefcontrol-0.1.1.xpi" and "update.rdf" are generated.
-
 
 ## Reference
 
