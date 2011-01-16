@@ -9,7 +9,7 @@
     <em:creator>bellbind</em:creator>
     <em:homepageURL>https://github.com/bellbind</em:homepageURL>
     <em:iconURL></em:iconURL>
-    <em:updateURL>>https://github.com/downloads/bellbind/altrefcontrol/update.rdf</em:updateURL>
+    <em:updateURL>https://github.com/downloads/bellbind/altrefcontrol/update.rdf</em:updateURL>
     
     <em:targetApplication><!-- Firefox -->
       <Description>
