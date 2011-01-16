@@ -4,10 +4,10 @@
   <Description about="urn:mozilla:install-manifest">
     <em:id>altrefcontrol@github.com</em:id>
     <em:name>altrefcontrol</em:name>
-    <em:version>0.1</em:version>
+    <em:version>0.1.1</em:version>
     <em:description>Alternative RefControl Implementation</em:description>
     <em:creator>bellbind</em:creator>
-    <em:homepageURL>https://github.com/bellbind</em:homepageURL>
+    <em:homepageURL>https://github.com/bellbind/altrefcontrol/</em:homepageURL>
     <em:iconURL></em:iconURL>
     <em:updateURL>https://github.com/downloads/bellbind/altrefcontrol/update.rdf</em:updateURL>
     
