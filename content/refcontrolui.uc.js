@@ -15,7 +15,7 @@
   var cc = Components.classes;
   var ci = Components.interfaces;
   
-  //[configuration manage]
+  // [configuration manage]
   var cPref = cc["@mozilla.org/preferences-service;1"];
   var pref = cPref.getService(ci.nsIPrefBranch2);
   var newObserver = function (handler) {
@@ -27,7 +27,7 @@
   
   var readOptions = function (conf) {
     // see: https://developer.mozilla.org/en/nsIPrefBranch2
-    var actionDefs = pref.getCharPref(OPTION_KEY).split(" ");
+    var actionDefs = pref.getCharPref(OPTION_KEY, "").split(" ");
     for (var i = 0; i < actionDefs.length; i += 1) {
       var actionDef = actionDefs[i];
       var index = actionDef.indexOf("=");
@@ -62,7 +62,7 @@
   pref.addObserver(OPTION_KEY, newObserver(handlerSyncOptions), false);
   
   
-  //[context menus]
+  // [context menus]
   var menuData = [
     ["normal", "Normal", "@NORMAL"],
     ["block", "Block", ""],
@@ -172,6 +172,7 @@
     popup.appendChild(item);
     items[data[0]] = item;
   }
+
   popup.appendChild(document.createElement("menuseparator"));
   var third = document.createElement("menuitem");
   third.id = "refcontrolui.menu.3rd";

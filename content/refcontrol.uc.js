@@ -7,7 +7,8 @@
 // @license MPL 1.1/GPL 2.0/LGPL 2.1
 // @homepage https://gist.github.com/777814
 // ==/UserScript==
-/* Usage
+
+/* Usage 
  * - Install userchromejs addon and this script into firefox 3.x or 4.x
  * - Set "refcontrol.actions" value by "about:config"
  *
@@ -53,7 +54,7 @@
   
   var readOptions = function (conf) {
     // see: https://developer.mozilla.org/en/nsIPrefBranch2
-    var actionDefs = pref.getCharPref(OPTION_KEY).split(" ");
+    var actionDefs = pref.getCharPref(OPTION_KEY, "").split(" ");
     for (var i = 0; i < actionDefs.length; i += 1) {
       var actionDef = actionDefs[i];
       var index = actionDef.indexOf("=");
