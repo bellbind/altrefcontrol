@@ -167,6 +167,12 @@
     var only3rd = settings.getOnly3rd(host);
     var label = "\"" + host + "\"";
     domain.setAttribute("label", label);
+    for (var i = 0; i < menuData.length; i += 1) {
+      var data = menuData[i];
+      var item = items[data[0]];
+      item.setAttribute("checked", action == data[2] ? "true" : "false");
+      item.host = host;
+    }
     if (!!action && action[0] != "@") {
       edit.setAttribute("label", action);
       edit.setAttribute("checked", true);
@@ -174,12 +180,9 @@
       edit.setAttribute("label", "(Edit)");
       edit.setAttribute("checked", false);
     }
-    for (var i = 0; i < menuData.length; i += 1) {
-      var data = menuData[i];
-      var item = items[data[0]];
-      item.setAttribute("checked", action == data[2] ? "true" : "false");
-    }
+    edit.host = host;
     third.setAttribute("checked", only3rd ? "true" : "false");
+    third.host = host;
   };
   
   var setDefaultMenuLabels = function () {
@@ -194,56 +197,41 @@
     defaultThird.setAttribute("checked", only3rd ? "true" : "false");
   };
   
-  var updateActionByMenu = function (host, action, item) {
-    if (item.getAttribute("checked") == "true") {
-      settings.remove(host);
-    } else {
-      settings.setAction(host, action);
-    }
-    settings.save();
-  };
   var updateActionCommand = function (item, action) {
     return function () {
-      var host = window.content.location.host;
-      updateActionByMenu(host, action, item);
+      var host = item.host;
+      if (item.getAttribute("checked") == "true") {
+        settings.remove(host);
+      } else {
+        settings.setAction(host, action);
+      }
+      settings.save();
     };
   };
-  var updateDefaultActionCommand = function (item, action) {
+  
+  var updateActionByEditCommand = function (item) {
     return function () {
-      var host = "@DEFAULT";
-      updateActionByMenu(host, action, item);
+      var host = item.host;
+      var input = {"value": settings.getAction(host)};
+      var result = prompt.prompt(
+        window, "Edit referer action", "Referer URI", input, 
+        "", {"checked":false});
+      if (result) {
+        settings.setAction(host, input.value);
+        settings.save();
+      }    
     };
   };
   
-  var updateActionByEdit = function (host) {
-    var input = {"value": settings.getAction(host)};
-    var result = prompt.prompt(
-      window, "Edit referer action", "Referer URI", input, 
-      "", {"checked":false});
-    if (result) {
-      settings.setAction(host, input.value);
-      settings.save();
-    }    
-  };
-  var updateActionByEditCommand = function () {
-    var host = window.content.location.host;
-    updateActionByEdit(host);
-  };
-  
-  var updateThirdByMenu = function (host, item) {
-    if (settings.defined(host)) {
-      var current = item.getAttribute("checked") == "true";
-      settings.setOnly3rd(host, !current);
-      settings.save();
-    }
-  };
-  var updateThirdCommand = function () {
-    var host = window.content.location.host;
-    updateThirdByMenu(host, third);
-  };
-  var updateDefaultThirdCommand = function () {
-    var host = "@DEFAULT";
-    updateThirdByMenu(host, defaultThird);
+  var updateThirdCommand = function (item) {
+    return function () {
+      var host = item.host;
+      if (settings.defined(host)) {
+        var current = item.getAttribute("checked") == "true";
+        settings.setOnly3rd(host, !current);
+        settings.save();
+      }
+    };
   };
   
   // build UI
@@ -281,7 +269,7 @@
     label: "(Edit)",
     iconic: true
   });
-  connect(edit, {command: updateActionByEditCommand});
+  connect(edit, {command: updateActionByEditCommand(edit)});
   popup.appendChild(edit);
   popup.appendChild(MenuSep());
   
@@ -290,7 +278,7 @@
     label: "3rd party only",
     iconic: true
   });
-  connect(third, {command: updateThirdCommand});
+  connect(third, {command: updateThirdCommand(third)});
   popup.appendChild(third);
   popup.appendChild(MenuSep());
   
@@ -314,7 +302,8 @@
       label: data[1],
       iconic: true
     });
-    connect(item, {command: updateDefaultActionCommand(item, data[2])});
+    connect(item, {command: updateActionCommand(item, data[2])});
+    item.host = "@DEFAULT";
     defaultPopup.appendChild(item);
     defaultItems[data[0]] = item;
   }
@@ -325,7 +314,8 @@
     label: "3rd party only",
     iconic: true
   });
-  connect(defaultThird, {command: updateDefaultThirdCommand});
+  defaultThird.host = "@DEFAULT";
+  connect(defaultThird, {command: updateThirdCommand(defaultThird)});
   defaultPopup.appendChild(defaultThird);
   
   // see: https://developer.mozilla.org/ja/XUL/PopupGuide/Extensions
