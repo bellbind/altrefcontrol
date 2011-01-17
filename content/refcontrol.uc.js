@@ -2,20 +2,20 @@
 // @name refcontrol.uc.js 
 // @include main
 // @description Control referer sending by refControl addon settings
-// @version 0.3
+// @version 0.4
 // @author bellbind
 // @license MPL 1.1/GPL 2.0/LGPL 2.1
-// @homepage https://gist.github.com/777814
+// @homepage https://github.com/bellbind/altrefcontrol
 // ==/UserScript==
 
-/* Usage 
- * - Install userchromejs addon and this script into firefox 3.x or 4.x
- * - Set "refcontrol.actions" value by "about:config"
- *
- * Example value of refcontrol.actions
- *   "@DEFAULT=@FORGE image.itmedia.co.jp=http://www.itmedia.co.jp/"
- */
 (function(){
+  /* Usage 
+   * - Install userchromejs addon and this script into firefox 3.x or 4.x
+   * - Set "refcontrol.actions" value by "about:config"
+   *
+   * Example value of refcontrol.actions
+   *   "@DEFAULT=@FORGE image.itmedia.co.jp=http://www.itmedia.co.jp/"
+   */
   //{key: [action, only3rd]}: derived from "refcontrol.actions"
   //  for spec, see: http://www.stardrifter.org/refcontrol/
   //[refcontrol key]
@@ -32,7 +32,7 @@
   //  @FORCE : force send origin
   //  @SELF : referer as same uri
   var defaultConf = {
-    "@DEFAULT": ["@FORGE", false]
+    //"@DEFAULT": ["@FORGE", false]
   };
   
   var OPTION_KEY = "refcontrol.actions";
@@ -131,6 +131,8 @@
 })();
 
 //[changelog]
+//0.4
+//  * minor change for altrefcontrol addon
 //0.3
 //  * Observe pref modification: e.g. edit via about:config
 //  * @SELF

@@ -3,11 +3,12 @@
 // @include main
 // @include chrome://browser/content/browser.xul
 // @description Interface for refcontrol.uc.js
-// @version 0.1
+// @version 0.2
 // @author bellbind
 // @license MPL 1.1/GPL 2.0/LGPL 2.1
-// @homepage https://gist.github.com/777814
+// @homepage https://github.com/bellbind/altrefcontrol
 // ==/UserScript==
+
 (function () {
   var OPTION_KEY = "refcontrol.actions";
   var RE_3RDPARTY = /^@3RDPARTY:/;
@@ -16,6 +17,8 @@
   var ci = Components.interfaces;
   
   // [configuration manage]
+  var cPrompt = cc["@mozilla.org/embedcomp/prompt-service;1"];
+  var prompt = cPrompt.getService(ci.nsIPromptService);
   var cPref = cc["@mozilla.org/preferences-service;1"];
   var pref = cPref.getService(ci.nsIPrefBranch2);
   var newObserver = function (handler) {
@@ -71,11 +74,18 @@
   
   var setMenuLabels = function () {
     var host = window.content.location.host;
-    domain.setAttribute("label", "\"" + host + "\"");
-    
     var value = conf[host];
-    var action = value ? value[0] : -1;
+    var action = value ? value[0] : null;
     var only3rd = value ? value[1] : false;
+    var label = "\"" + host + "\"";
+    domain.setAttribute("label", label);
+    if (!!action && action[0] != "@") {
+      edit.setAttribute("label", action);
+      edit.setAttribute("checked", true);
+    } else {
+      edit.setAttribute("label", "(Edit)");
+      edit.setAttribute("checked", false);
+    }
     for (var i = 0; i < menuData.length; i += 1) {
       var data = menuData[i];
       var item = items[data[0]];
@@ -102,7 +112,9 @@
       if (item.getAttribute("checked") == "true") {
         delete conf[host];
       } else {
-        conf[host] = [action, false];
+        var value = conf[host] || ["", false];
+        value[0] = action;
+        conf[host] = value;
       }
       writeOptions(conf);
     };
@@ -114,10 +126,26 @@
       if (item.getAttribute("checked") == "true") {
         delete conf[host];
       } else {
-        conf[host] = [action, false];
+        var value = conf[host] || ["", false];
+        value[0] = action;
+        conf[host] = value;
       }
       writeOptions(conf);
     };
+  };
+  
+  var setActionEditCommand = function () {
+    var host = window.content.location.host;
+    var value = conf[host] || ["", false];
+    var input = {"value": value[0]};
+    var result = prompt.prompt(
+      window, "Edit referer action", "Referer URI", input, 
+      "", {"checked":false});
+    if (result) {
+      value[0] = input.value;
+      conf[host] = value;
+      writeOptions(conf);
+    }
   };
   
   var setThirdCommand = function () {
@@ -172,7 +200,16 @@
     popup.appendChild(item);
     items[data[0]] = item;
   }
-
+  
+  var edit = document.createElement("menuitem");
+  edit.id = "refcontrolui.menu.edit";
+  edit.setAttribute("label", "(Edit)");
+  edit.hidden = false;
+  edit.setAttribute("checked", "false");
+  edit.className = "menuitem-iconic";
+  edit.addEventListener("command", setActionEditCommand, false);
+  popup.appendChild(edit);
+  
   popup.appendChild(document.createElement("menuseparator"));
   var third = document.createElement("menuitem");
   third.id = "refcontrolui.menu.3rd";
@@ -227,6 +264,8 @@
 })();
 
 //[changelog]
+//0.2
+//  * Add Referer Edit UI
 //0.1
 //  * UI as context menu
 //  * Edit only refControl compatible area
