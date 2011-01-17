@@ -28,7 +28,7 @@ Download latest altrefcontrol-x.y.z.xpi file from
   just to contain the absolute platform-specific git source path. 
   e.g.:
 
-    C:\cygwin\home\bellbind\git\altrefcontrol
+      C:\cygwin\home\bellbind\git\altrefcontrol
 
 - run firefox with "-profile profile/" option again. it enabled the addon.
 - restart firefox, edited addon will be loaded
