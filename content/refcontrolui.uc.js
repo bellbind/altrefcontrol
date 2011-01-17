@@ -11,59 +11,94 @@
 
 (function () {
   var OPTION_KEY = "refcontrol.actions";
-  var RE_3RDPARTY = /^@3RDPARTY:/;
   
   var cc = Components.classes;
   var ci = Components.interfaces;
   
+  var RefControlSettings = function (pref_key) {
+    var cPref = cc["@mozilla.org/preferences-service;1"];
+    var pref = cPref.getService(ci.nsIPrefBranch2);
+    var newObserver = function (handler) {
+      // see: https://developer.mozilla.org/en/nsIObserver
+      return {"observe": handler};
+    };
+    
+    var RE_3RDPARTY = /^@3RDPARTY:/;
+    var loadSettings = function (conf) {
+      // see: https://developer.mozilla.org/en/nsIPrefBranch2
+      var actionDefs = pref.getCharPref(pref_key, "").split(" ");
+      for (var i = 0; i < actionDefs.length; i += 1) {
+        var actionDef = actionDefs[i];
+        var index = actionDef.indexOf("=");
+        if (index > 0) {
+          var right = actionDef.substr(index + 1);
+          var only3rd = right.match(RE_3RDPARTY) ? true : false;
+          var action = right.replace(RE_3RDPARTY, "");
+          conf[actionDef.substr(0, index)] = [action, only3rd];
+        }
+      }
+    };
+    var storeSettings = function (conf) {
+      var lines = [];
+      for (var key in conf) {
+        var value = conf[key];
+        lines.push(key + "=" + (value[1] ? "@3RDPARTY:" : "") + value[0]);
+      }
+      pref.setCharPref(OPTION_KEY, lines.join(" "));
+    };
+    
+    var conf = {};
+    var self = {
+      load: function () {
+        conf = {};
+        loadSettings(conf);
+      },
+      save: function () {
+        storeSettings(conf);
+      },
+      defined: function (host) {
+        return conf[host] !== undefined;
+      },
+      set: function (host, action, only3rd) {
+        conf[host] = [action, only3rd];
+      },
+      setAction: function (host, action) {
+        var value = conf[host] || ["", false];
+        value[0] = action;
+        conf[host] = value;        
+      },
+      setOnly3rd: function (host, only3rd) {
+        var value = conf[host];
+        if (value) value[1] = only3rd;
+      },
+      remove: function (host) {
+        delete conf[host];
+      },
+      getAction: function (host) {
+        var value = conf[host];
+        return value ? value[0] : null;
+      },
+      getOnly3rd: function (host) {
+        var value = conf[host];
+        return value ? value[1] : false;        
+      }
+    };
+    
+    // init
+    self.load();
+    var handlerSyncSettings = function (subject, topic, data) {
+      self.load();
+    };
+    pref.addObserver(OPTION_KEY, newObserver(), false);
+    
+    return self;
+  };
+  
   // [configuration manage]
   var cPrompt = cc["@mozilla.org/embedcomp/prompt-service;1"];
   var prompt = cPrompt.getService(ci.nsIPromptService);
-  var cPref = cc["@mozilla.org/preferences-service;1"];
-  var pref = cPref.getService(ci.nsIPrefBranch2);
-  var newObserver = function (handler) {
-    // see: https://developer.mozilla.org/en/nsIObserver
-    return {"observe": handler};
-  };
   
-  var conf = {};
-  
-  var readOptions = function (conf) {
-    // see: https://developer.mozilla.org/en/nsIPrefBranch2
-    var actionDefs = pref.getCharPref(OPTION_KEY, "").split(" ");
-    for (var i = 0; i < actionDefs.length; i += 1) {
-      var actionDef = actionDefs[i];
-      var index = actionDef.indexOf("=");
-      if (index > 0) {
-        var right = actionDef.substr(index + 1);
-        var only3rd = right.match(RE_3RDPARTY) ? true : false;
-        var action = right.replace(RE_3RDPARTY, "");
-        conf[actionDef.substr(0, index)] = [action, only3rd];
-      }
-    }
-  };
-  
-  var writeOptions = function (conf) {
-    var lines = [];
-    for (var key in conf) {
-      var value = conf[key];
-      lines.push(key + "=" + (value[1] ? "@3RDPARTY:" : "") + value[0]);
-    }
-    pref.setCharPref(OPTION_KEY, lines.join(" "));
-  };
-  
-  var updateConf = function () {
-    conf = {};
-    readOptions(conf);
-  };
-  
-  var handlerSyncOptions = function (subject, topic, data) {
-    updateConf();
-  };
-  
-  updateConf();
-  pref.addObserver(OPTION_KEY, newObserver(handlerSyncOptions), false);
-  
+  var settings = RefControlSettings(OPTION_KEY);
   
   // [context menus]
   var menuData = [
@@ -72,11 +107,64 @@
     ["forge", "Forge", "@FORGE"],
   ];
   
+  // UI factories
+  // see: https://developer.mozilla.org/en/XUL/menu
+  // see: https://developer.mozilla.org/en/XUL/menuitem
+  var Widget = function (typename, opts) {
+    var node = document.createElement(typename);
+    for (var key in opts.props || {}) {
+      node[key] = opts.props[key];
+    }
+    for (var key in opts.attrs || {}) {
+      node.setAttribute(key, opts.attrs[key]);
+    }
+    return node;
+  };
+  var connect = function (node, events) {
+    for (var key in events) {
+      node.addEventListener(key, events[key], false);
+    }
+    return node;
+  };
+  var Menu = function (opts) {
+    var nodeopts = {
+      props: {
+        id: opts.id,
+        hidden: opts.hidden || false,
+        className: opts.iconic ? "menu-iconic" : "menu-non-iconic"
+      },
+      attrs: {
+        label: opts.label || ""
+      }
+    };
+    return Widget("menu", nodeopts);
+  };
+  var MenuPopup = function () {
+    return Widget("menupopup", {});
+  };
+  var MenuSep = function () {
+    return Widget("menuseparator", {});
+  };
+  var MenuItem = function (opts) {
+    var nodeopts = {
+      props: {
+        id: opts.id,
+        hidden: opts.hidden ? true : false,
+        className: opts.iconic ? "menuitem-iconic" : "menuitem-non-iconic"
+      },
+      attrs: {
+        label: opts.label || "",
+        checked: "false"
+      }
+    };
+    return Widget("menuitem", nodeopts);
+  };
+  
+  // event handlers
   var setMenuLabels = function () {
     var host = window.content.location.host;
-    var value = conf[host];
-    var action = value ? value[0] : null;
-    var only3rd = value ? value[1] : false;
+    var action = settings.getAction(host);
+    var only3rd = settings.getOnly3rd(host);
     var label = "\"" + host + "\"";
     domain.setAttribute("label", label);
     if (!!action && action[0] != "@") {
@@ -95,9 +183,9 @@
   };
   
   var setDefaultMenuLabels = function () {
-    var value = conf["@DEFAULT"];
-    var action = value ? value[0] : -1;
-    var only3rd = value ? value[1] : false;
+    var host = "@DEFAULT";
+    var action = settings.getAction(host);
+    var only3rd = settings.getOnly3rd(host);
     for (var i = 0; i < menuData.length; i += 1) {
       var data = menuData[i];
       var item = defaultItems[data[0]];
@@ -106,156 +194,138 @@
     defaultThird.setAttribute("checked", only3rd ? "true" : "false");
   };
   
-  var setActionCommand = function (item, action) {
+  var updateActionByMenu = function (host, action, item) {
+    if (item.getAttribute("checked") == "true") {
+      settings.remove(host);
+    } else {
+      settings.setAction(host, action);
+    }
+    settings.save();
+  };
+  var updateActionCommand = function (item, action) {
     return function () {
       var host = window.content.location.host;
-      if (item.getAttribute("checked") == "true") {
-        delete conf[host];
-      } else {
-        var value = conf[host] || ["", false];
-        value[0] = action;
-        conf[host] = value;
-      }
-      writeOptions(conf);
+      updateActionByMenu(host, action, item);
     };
   };
-  
-  var setDefaultActionCommand = function (item, action) {
+  var updateDefaultActionCommand = function (item, action) {
     return function () {
       var host = "@DEFAULT";
-      if (item.getAttribute("checked") == "true") {
-        delete conf[host];
-      } else {
-        var value = conf[host] || ["", false];
-        value[0] = action;
-        conf[host] = value;
-      }
-      writeOptions(conf);
+      updateActionByMenu(host, action, item);
     };
   };
   
-  var setActionEditCommand = function () {
-    var host = window.content.location.host;
-    var value = conf[host] || ["", false];
-    var input = {"value": value[0]};
+  var updateActionByEdit = function (host) {
+    var input = {"value": settings.getAction(host)};
     var result = prompt.prompt(
       window, "Edit referer action", "Referer URI", input, 
       "", {"checked":false});
     if (result) {
-      value[0] = input.value;
-      conf[host] = value;
-      writeOptions(conf);
-    }
+      settings.setAction(host, input.value);
+      settings.save();
+    }    
   };
-  
-  var setThirdCommand = function () {
+  var updateActionByEditCommand = function () {
     var host = window.content.location.host;
-    var values = conf[host];
-    if (values !== undefined) {
-      var current = third.getAttribute("checked") == "true";
-      values[1] = !current;
-      writeOptions(conf);
-    }
+    updateActionByEdit(host);
   };
   
-  var setDefaultThirdCommand = function () {
-    var host = "@DEFAULT";
-    var values = conf[host];
-    if (values !== undefined) {
-      var current = defaultThird.getAttribute("checked") == "true";
-      values[1] = !current;
-      writeOptions(conf);
+  var updateThirdByMenu = function (host, item) {
+    if (settings.defined(host)) {
+      var current = item.getAttribute("checked") == "true";
+      settings.setOnly3rd(host, !current);
+      settings.save();
     }
+  };
+  var updateThirdCommand = function () {
+    var host = window.content.location.host;
+    updateThirdByMenu(host, third);
+  };
+  var updateDefaultThirdCommand = function () {
+    var host = "@DEFAULT";
+    updateThirdByMenu(host, defaultThird);
   };
   
   // build UI
-  // see: https://developer.mozilla.org/en/XUL/menu
-  // see: https://developer.mozilla.org/en/XUL/menuitem
-  var menu = document.createElement("menu");
-  menu.id = "refcontrolui.menu";
-  menu.setAttribute("label", "Referer Control");
-  menu.hidden = false;
-  menu.className = "menu-iconic";
-  menu.addEventListener("popupshowing", setMenuLabels, false);
-  
-  var popup = document.createElement("menupopup");
+  var menu = Menu({
+    id: "refcontrolui.menu",
+    label: "Referer Control",
+    iconic: true
+  });
+  connect(menu, {popupshowing: setMenuLabels});
+  var popup = MenuPopup();
   menu.appendChild(popup);
   
-  var domain = document.createElement("menuitem");
-  domain.id = "refcontrolui.menu.domain";
-  domain.className = "menuitem-non-iconic";
+  var domain = MenuItem({
+    id: "refcontrolui.menu.domain",
+    iconic: false
+  });
   popup.appendChild(domain);
-  popup.appendChild(document.createElement("menuseparator"));
+  popup.appendChild(MenuSep());
   
   var items = {};
   for (var i = 0; i < menuData.length; i += 1) {
     var data = menuData[i];
-    var item = document.createElement("menuitem");
-    item.id = "refcontrolui.menu." + data[0];
-    item.setAttribute("label", data[1]);
-    item.hidden = false;
-    item.setAttribute("checked", "false");
-    item.className = "menuitem-iconic";
-    item.addEventListener("command", setActionCommand(item, data[2]), false);
+    var item = MenuItem({
+      id: "refcontrolui.menu." + data[0],
+      label: data[1],
+      iconic: true,
+    });
+    connect(item, {command: updateActionCommand(item, data[2])});
     popup.appendChild(item);
     items[data[0]] = item;
   }
   
-  var edit = document.createElement("menuitem");
-  edit.id = "refcontrolui.menu.edit";
-  edit.setAttribute("label", "(Edit)");
-  edit.hidden = false;
-  edit.setAttribute("checked", "false");
-  edit.className = "menuitem-iconic";
-  edit.addEventListener("command", setActionEditCommand, false);
+  var edit = MenuItem({
+    id: "refcontrolui.menu.edit",
+    label: "(Edit)",
+    iconic: true
+  });
+  connect(edit, {command: updateActionByEditCommand});
   popup.appendChild(edit);
+  popup.appendChild(MenuSep());
   
-  popup.appendChild(document.createElement("menuseparator"));
-  var third = document.createElement("menuitem");
-  third.id = "refcontrolui.menu.3rd";
-  third.setAttribute("label", "3rd party only");
-  third.hidden = false;
-  third.setAttribute("checked", "false");
-  third.className = "menuitem-iconic";
-  third.addEventListener("command", setThirdCommand, false);
+  var third = MenuItem({
+    id: "refcontrolui.menu.3rd",
+    label: "3rd party only",
+    iconic: true
+  });
+  connect(third, {command: updateThirdCommand});
   popup.appendChild(third);
-  
-  popup.appendChild(document.createElement("menuseparator"));
+  popup.appendChild(MenuSep());
   
   // UI for default action edit
-  var defaultMenu = document.createElement("menu");
-  defaultMenu.id = "refcontrolui.menu.default";
-  defaultMenu.setAttribute("label", "All Site");
-  defaultMenu.hidden = false;
-  defaultMenu.className = "menu-non-iconic";
-  defaultMenu.addEventListener("popupshowing", setDefaultMenuLabels, false);
+  var defaultMenu = Menu({
+    id: "refcontrolui.menu.default",
+    label: "All Site",
+    iconic: false
+  });
+  connect(defaultMenu, {popupshowing: setDefaultMenuLabels});
   popup.appendChild(defaultMenu);
   
-  var defaultPopup = document.createElement("menupopup");
+  var defaultPopup = MenuPopup();
   defaultMenu.appendChild(defaultPopup);
   
   var defaultItems = {};
   for (var i = 0; i < menuData.length; i += 1) {
     var data = menuData[i];
-    var item = document.createElement("menuitem");
-    item.id = "refcontrolui.menu.default." + data[0];
-    item.setAttribute("label", data[1]);
-    item.hidden = false;
-    item.setAttribute("checked", "false");
-    item.className = "menuitem-iconic";
-    item.addEventListener(
-      "command", setDefaultActionCommand(item, data[2]), false);
+    var item = MenuItem({
+      id: "refcontrolui.menu.default." + data[0],
+      label: data[1],
+      iconic: true
+    });
+    connect(item, {command: updateDefaultActionCommand(item, data[2])});
     defaultPopup.appendChild(item);
     defaultItems[data[0]] = item;
   }
-  defaultPopup.appendChild(document.createElement("menuseparator"));
-  var defaultThird = document.createElement("menuitem");
-  defaultThird.id = "refcontrolui.menu.default.3rd";
-  defaultThird.setAttribute("label", "3rd party only");
-  defaultThird.hidden = false;
-  defaultThird.setAttribute("checked", "false");
-  defaultThird.className = "menuitem-iconic";
-  defaultThird.addEventListener("command", setDefaultThirdCommand, false);
+  defaultPopup.appendChild(MenuSep());
+  
+  var defaultThird = MenuItem({
+    id: "refcontrolui.menu.default.3rd",
+    label: "3rd party only",
+    iconic: true
+  });
+  connect(defaultThird, {command: updateDefaultThirdCommand});
   defaultPopup.appendChild(defaultThird);
   
   // see: https://developer.mozilla.org/ja/XUL/PopupGuide/Extensions
