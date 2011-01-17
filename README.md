@@ -36,9 +36,9 @@ Download latest altrefcontrol-x.y.z.xpi file from
 ### Release update and package build
 
 After edit codes. update "em:version" in "install.rdf". 
-e.g.:
+e.g. <em:version>0.1.1</em:version>:
 
-    ./build.sh 0.1.1
+    ./build.sh
 
 then "altrefcontrol-0.1.1.xpi" and "update.rdf" are generated.
 
