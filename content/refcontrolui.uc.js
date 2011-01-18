@@ -161,40 +161,38 @@
   };
   
   // event handlers
-  var setMenuLabels = function () {
-    var host = window.content.location.host;
+  var setMenuLabels = function (host, label, ui) {
     var action = settings.getAction(host);
     var only3rd = settings.getOnly3rd(host);
-    var label = "\"" + host + "\"";
-    domain.setAttribute("label", label);
+    ui.domain.setAttribute("label", label);
     for (var i = 0; i < menuData.length; i += 1) {
       var data = menuData[i];
-      var item = items[data[0]];
+      var item = ui.items[data[0]];
       item.setAttribute("checked", action == data[2] ? "true" : "false");
       item.host = host;
     }
     if (!!action && action[0] != "@") {
-      edit.setAttribute("label", action);
-      edit.setAttribute("checked", true);
+      ui.edit.setAttribute("label", action);
+      ui.edit.setAttribute("checked", true);
     } else {
-      edit.setAttribute("label", "(Edit)");
-      edit.setAttribute("checked", false);
+      ui.edit.setAttribute("label", "(Edit)");
+      ui.edit.setAttribute("checked", false);
     }
-    edit.host = host;
-    third.setAttribute("checked", only3rd ? "true" : "false");
-    third.host = host;
+    ui.edit.host = host;
+    ui.third.setAttribute("checked", only3rd ? "true" : "false");
+    ui.third.host = host;
   };
-  
-  var setDefaultMenuLabels = function () {
+  var setTargetMenuLabels = function () {
+    var host = window.content.location.host;
+    var label = "\"" + host + "\"";
+    var ui = target;
+    setMenuLabels(host, label, ui);
+  };
+  var setAllsiteMenuLabels = function () {
     var host = "@DEFAULT";
-    var action = settings.getAction(host);
-    var only3rd = settings.getOnly3rd(host);
-    for (var i = 0; i < menuData.length; i += 1) {
-      var data = menuData[i];
-      var item = defaultItems[data[0]];
-      item.setAttribute("checked", action == data[2] ? "true" : "false");
-    }
-    defaultThird.setAttribute("checked", only3rd ? "true" : "false");
+    var label = "All Site";
+    var ui = allsite;
+    setMenuLabels(host, label, ui);    
   };
   
   var updateActionCommand = function (item, action) {
@@ -234,89 +232,88 @@
     };
   };
   
+  // builder
+  
+  var domainMenus = function (idprefix, label, domainFactory) {
+    var domain = domainFactory({
+      id: idprefix + ".domain",
+      label: label,
+      iconic: false
+    });
+    
+    var items = {};
+    var actions = [];
+    for (var i = 0; i < menuData.length; i += 1) {
+      var data = menuData[i];
+      var item = MenuItem({
+        id: idprefix + "." + data[0],
+        label: data[1],
+        iconic: true,
+      });
+      connect(item, {command: updateActionCommand(item, data[2])});
+      items[data[0]] = item;
+      actions.push(item);
+    }
+    
+    var edit = MenuItem({
+      id: idprefix + ".edit",
+      label: "(Edit)",
+      iconic: true
+    });
+    connect(edit, {command: updateActionByEditCommand(edit)});
+    
+    var third = MenuItem({
+      id: idprefix + ".3rd",
+      label: "3rd party only",
+      iconic: true
+    });
+    connect(third, {command: updateThirdCommand(third)});
+    
+    return {
+      domain: domain,
+      items: items,
+      actions: actions,
+      edit: edit,
+      third: third
+    };
+  };
+  
   // build UI
   var menu = Menu({
     id: "refcontrolui.menu",
     label: "Referer Control",
     iconic: true
   });
-  connect(menu, {popupshowing: setMenuLabels});
+  connect(menu, {popupshowing: setTargetMenuLabels});
   var popup = MenuPopup();
   menu.appendChild(popup);
   
-  var domain = MenuItem({
-    id: "refcontrolui.menu.domain",
-    iconic: false
-  });
-  popup.appendChild(domain);
+  var target = domainMenus("refcontrolui.menu", "", MenuItem);
+  popup.appendChild(target.domain);
   popup.appendChild(MenuSep());
-  
-  var items = {};
-  for (var i = 0; i < menuData.length; i += 1) {
-    var data = menuData[i];
-    var item = MenuItem({
-      id: "refcontrolui.menu." + data[0],
-      label: data[1],
-      iconic: true,
-    });
-    connect(item, {command: updateActionCommand(item, data[2])});
-    popup.appendChild(item);
-    items[data[0]] = item;
+  for (var i = 0; i < target.actions.length; i += 1) {
+    popup.appendChild(target.actions[i]);
   }
-  
-  var edit = MenuItem({
-    id: "refcontrolui.menu.edit",
-    label: "(Edit)",
-    iconic: true
-  });
-  connect(edit, {command: updateActionByEditCommand(edit)});
-  popup.appendChild(edit);
   popup.appendChild(MenuSep());
-  
-  var third = MenuItem({
-    id: "refcontrolui.menu.3rd",
-    label: "3rd party only",
-    iconic: true
-  });
-  connect(third, {command: updateThirdCommand(third)});
-  popup.appendChild(third);
+  popup.appendChild(target.edit);
+  popup.appendChild(MenuSep());
+  popup.appendChild(target.third);
   popup.appendChild(MenuSep());
   
   // UI for default action edit
-  var defaultMenu = Menu({
-    id: "refcontrolui.menu.default",
-    label: "All Site",
-    iconic: false
-  });
-  connect(defaultMenu, {popupshowing: setDefaultMenuLabels});
-  popup.appendChild(defaultMenu);
-  
-  var defaultPopup = MenuPopup();
-  defaultMenu.appendChild(defaultPopup);
-  
-  var defaultItems = {};
-  for (var i = 0; i < menuData.length; i += 1) {
-    var data = menuData[i];
-    var item = MenuItem({
-      id: "refcontrolui.menu.default." + data[0],
-      label: data[1],
-      iconic: true
-    });
-    connect(item, {command: updateActionCommand(item, data[2])});
-    item.host = "@DEFAULT";
-    defaultPopup.appendChild(item);
-    defaultItems[data[0]] = item;
+  var allsite = domainMenus("refcontrolui.menu.default", "All Site", Menu);
+  popup.appendChild(allsite.domain);
+  connect(allsite.domain, {popupshowing: setAllsiteMenuLabels});
+  allsite.popup =   MenuPopup();
+  allsite.domain.appendChild(allsite.popup);
+  for (var i = 0; i < allsite.actions.length; i += 1) {
+    allsite.popup.appendChild(allsite.actions[i]);
   }
-  defaultPopup.appendChild(MenuSep());
-  
-  var defaultThird = MenuItem({
-    id: "refcontrolui.menu.default.3rd",
-    label: "3rd party only",
-    iconic: true
-  });
-  defaultThird.host = "@DEFAULT";
-  connect(defaultThird, {command: updateThirdCommand(defaultThird)});
-  defaultPopup.appendChild(defaultThird);
+  allsite.popup.appendChild(MenuSep());
+  allsite.popup.appendChild(allsite.edit);
+  allsite.popup.appendChild(MenuSep());
+  allsite.popup.appendChild(allsite.third);
+  allsite.popup.appendChild(MenuSep());
   
   // see: https://developer.mozilla.org/ja/XUL/PopupGuide/Extensions
   var contextMenu = document.getElementById("contentAreaContextMenu");
