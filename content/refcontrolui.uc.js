@@ -3,7 +3,7 @@
 // @include main
 // @include chrome://browser/content/browser.xul
 // @description Interface for refcontrol.uc.js
-// @version 0.2
+// @version 0.3
 // @author bellbind
 // @license MPL 1.1/GPL 2.0/LGPL 2.1
 // @homepage https://github.com/bellbind/altrefcontrol
@@ -126,6 +126,11 @@
     }
     return node;
   };
+  var clearChild = function (node) {
+    while (node.hasChildNodes()) {
+      node.removeChild(node.lastChild);
+    }
+  };
   var Menu = function (opts) {
     var nodeopts = {
       props: {
@@ -212,8 +217,8 @@
       var host = item.host;
       var input = {"value": settings.getAction(host)};
       var result = prompt.prompt(
-        window, "Edit referer action", "Referer URI", input, 
-        "", {"checked":false});
+        window, "Edit referer action for \"" + host + "\"", 
+        "Referer URI", input, "", {"checked":false});
       if (result) {
         settings.setAction(host, input.value);
         settings.save();
@@ -232,8 +237,29 @@
     };
   };
   
-  // builder
+  var setDomainsMenus = function () {
+    clearChild(domainsPopup);
+    
+    var names = window.content.location.host.split(".");
+    for (var i = 1; i < names.length; i += 1) {
+      var host = names.slice(i).join(".");
+      var label = "\"" + host + "\"";
+      var ui = domainMenus("refcontrolui.menu.domains." + i, label, MenuItem);
+      domainsPopup.appendChild(MenuSep());
+      domainsPopup.appendChild(ui.domain);
+      domainsPopup.appendChild(MenuSep());
+      for (var j = 0; j < ui.actions.length; j += 1) {
+        domainsPopup.appendChild(ui.actions[j]);
+      }
+      domainsPopup.appendChild(ui.edit);
+      domainsPopup.appendChild(MenuSep());
+      domainsPopup.appendChild(ui.third);
+      domainsPopup.appendChild(MenuSep());
+      setMenuLabels(host, label, ui);
+    };
+  };
   
+  // builder
   var domainMenus = function (idprefix, label, domainFactory) {
     var domain = domainFactory({
       id: idprefix + ".domain",
@@ -294,13 +320,23 @@
   for (var i = 0; i < target.actions.length; i += 1) {
     popup.appendChild(target.actions[i]);
   }
-  popup.appendChild(MenuSep());
   popup.appendChild(target.edit);
   popup.appendChild(MenuSep());
   popup.appendChild(target.third);
   popup.appendChild(MenuSep());
   
-  // UI for default action edit
+  var domains = Menu({
+    id: "refcontrolui.menu.domains",
+    label: "Domains",
+    iconic: false
+  });
+  connect(domains, {popupshowing: setDomainsMenus});
+  popup.appendChild(domains);
+  popup.appendChild(MenuSep());
+  var domainsPopup = MenuPopup();
+  domains.appendChild(domainsPopup);
+  
+  // UI for all site action edit
   var allsite = domainMenus("refcontrolui.menu.default", "All Site", Menu);
   popup.appendChild(allsite.domain);
   connect(allsite.domain, {popupshowing: setAllsiteMenuLabels});
@@ -309,11 +345,9 @@
   for (var i = 0; i < allsite.actions.length; i += 1) {
     allsite.popup.appendChild(allsite.actions[i]);
   }
-  allsite.popup.appendChild(MenuSep());
   allsite.popup.appendChild(allsite.edit);
   allsite.popup.appendChild(MenuSep());
   allsite.popup.appendChild(allsite.third);
-  allsite.popup.appendChild(MenuSep());
   
   // see: https://developer.mozilla.org/ja/XUL/PopupGuide/Extensions
   var contextMenu = document.getElementById("contentAreaContextMenu");
@@ -321,6 +355,9 @@
 })();
 
 //[changelog]
+//0.3
+//  * Domain Editor Menu
+//  * refactoring codes
 //0.2
 //  * Add Referer Edit UI
 //0.1
