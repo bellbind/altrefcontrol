@@ -310,8 +310,8 @@
     label: "Referer Control",
     iconic: true
   });
-  connect(menu, {popupshowing: setTargetMenuLabels});
   var popup = MenuPopup();
+  connect(popup, {popupshowing: setTargetMenuLabels});
   menu.appendChild(popup);
   
   var target = domainMenus("refcontrolui.menu", "", MenuItem);
@@ -330,17 +330,17 @@
     label: "Domains",
     iconic: false
   });
-  connect(domains, {popupshowing: setDomainsMenus});
   popup.appendChild(domains);
   popup.appendChild(MenuSep());
   var domainsPopup = MenuPopup();
   domains.appendChild(domainsPopup);
+  connect(domainsPopup, {popupshowing: setDomainsMenus});
   
   // UI for all site action edit
   var allsite = domainMenus("refcontrolui.menu.default", "All Site", Menu);
   popup.appendChild(allsite.domain);
-  connect(allsite.domain, {popupshowing: setAllsiteMenuLabels});
-  allsite.popup =   MenuPopup();
+  allsite.popup = MenuPopup();
+  connect(allsite.popup, {popupshowing: setAllsiteMenuLabels});
   allsite.domain.appendChild(allsite.popup);
   for (var i = 0; i < allsite.actions.length; i += 1) {
     allsite.popup.appendChild(allsite.actions[i]);
