@@ -3,7 +3,7 @@
 // @include main
 // @include chrome://browser/content/browser.xul
 // @description Interface for refcontrol.uc.js
-// @version 0.3
+// @version 0.4
 // @author bellbind
 // @license MPL 1.1/GPL 2.0/LGPL 2.1
 // @homepage https://github.com/bellbind/altrefcontrol
@@ -355,6 +355,8 @@
 })();
 
 //[changelog]
+//0.4
+//  * set popupshowing handler to its menupopup directly
 //0.3
 //  * Domain Editor Menu
 //  * refactoring codes
