@@ -3,6 +3,7 @@
 # required commands: ruby find grep zip sha1sum sed
 
 VERSION=`ruby -ane  'print $1 if /<em:version>(.*)<\/em:version>/' install.rdf`
+MAX_VERSION=`ruby -ane  'print $1 if /<em:maxVersion>(.*)<\/em:maxVersion>/' install.rdf`
 XPI=altrefcontrol-$VERSION.xpi
 
 find . -print | \
@@ -11,4 +12,4 @@ find . -print | \
   zip -@ $XPI
 SHA1=`sha1sum $XPI | ruby -ane 'print $F[0]'`
 
-sed -e "s/@@VERSION@@/$VERSION/g;s/@@XPI@@/$XPI/g;s/@@SHA1@@/$SHA1/g" update.rdf.xml > update.rdf
+sed -e "s/@@MAX_VERSION@@/$MAX_VERSION/g;s/@@VERSION@@/$VERSION/g;s/@@XPI@@/$XPI/g;s/@@SHA1@@/$SHA1/g;" update.rdf.xml > update.rdf
