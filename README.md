@@ -13,8 +13,10 @@ We made it from scratch.
 
 ## Install
 
-You can download latest altrefcontrol-x.y.z.xpi file from 
-[latest xpi](https://dl.dropboxusercontent.com/u/14499563/altrefcontrol/altrefcontrol-0.2.8.xpi)
+You can download latest altrefcontrol-x.y.z.xpi file from:
+
+- [latest xpi](https://dl.dropboxusercontent.com/u/14499563/altrefcontrol/altrefcontrol-0.2.8.xpi)
+
 (it may require permission to allow install from dropboxusercontent.com)
 
 ## For development
