@@ -7,6 +7,19 @@
         title="altrefcontrol settings">
   <script src="options.js"/>
 
+  <grid>
+    <columns>
+      <column flex="0"/>
+      <column flex="1"/>
+      <column flex="0"/>
+    </columns>
+    <row>
+      <label value="new domain"/>
+      <textbox id="domain"/>
+      <button id="add" label="add" />
+    </row>
+  </grid>
+
   <listbox id="box" rows="15">
     <listcols>
       <listcol flex="2"/>
@@ -22,7 +35,7 @@
     </listhead>
 <!--
     <listitem allowevents="true">
-      <textbox value="example.com" editable="true"/>
+      <listcell label="example.com"/>
       <menulist editable="true" label="@BLOCK">
         <menupopup>
           <menuitem label="@NORMAL" />
