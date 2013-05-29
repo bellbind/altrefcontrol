@@ -5,16 +5,17 @@ We made it from scratch.
 
 ## features
 
-- Support firefox-4
 - Switching Referers
 - Use refControl addon setting
 - Context menu UI
+- Option dialog UI
+- Support over firefox-4
 
 ## Install
 
-Download latest altrefcontrol-x.y.z.xpi file from 
-[download page](https://github.com/bellbind/altrefcontrol/downloads)
-(it requires permission to allow install from github.com)
+You can download latest altrefcontrol-x.y.z.xpi file from 
+[latest xpi](https://dl.dropboxusercontent.com/u/14499563/altrefcontrol/altrefcontrol-0.2.8.xpi)
+(it may require permission to allow install from dropboxusercontent.com)
 
 ## For development
 

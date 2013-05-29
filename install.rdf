@@ -4,13 +4,13 @@
   <Description about="urn:mozilla:install-manifest">
     <em:id>altrefcontrol@github.com</em:id>
     <em:name>altrefcontrol</em:name>
-    <em:version>0.2.7</em:version>
+    <em:version>0.2.8</em:version>
     <em:description>Alternative RefControl Implementation</em:description>
     <em:creator>bellbind</em:creator>
     <em:homepageURL>https://github.com/bellbind/altrefcontrol/</em:homepageURL>
     <em:iconURL></em:iconURL>
     <em:optionsURL>chrome://altrefcontrol/content/options.xul</em:optionsURL>
-    <em:updateURL>https://cloud.github.com/downloads/bellbind/altrefcontrol/update.rdf</em:updateURL>
+    <em:updateURL>https://dl.dropboxusercontent.com/u/14499563/altrefcontrol/update.rdf</em:updateURL>
     
     <em:targetApplication><!-- Firefox -->
       <Description>
