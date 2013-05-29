@@ -9,6 +9,7 @@
     <em:creator>bellbind</em:creator>
     <em:homepageURL>https://github.com/bellbind/altrefcontrol/</em:homepageURL>
     <em:iconURL></em:iconURL>
+    <em:optionsURL>chrome://altrefcontrol/content/options.xul</em:optionsURL>
     <em:updateURL>https://cloud.github.com/downloads/bellbind/altrefcontrol/update.rdf</em:updateURL>
     
     <em:targetApplication><!-- Firefox -->

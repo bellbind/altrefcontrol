@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        id="altrefcontrol-options"
+        style="min-width: 40em; min-height: 25em;"
+        buttons="accept"
+        title="altrefcontrol settings">
+  <script src="options.js"/>
+  <tree id="tree" rows="20">
+    <treecols>
+      <treecol flex="1" label="domain"/>
+      <splitter/>
+      <treecol flex="1" label="value"/>
+      <treecol label="only 3rd party"/>
+    </treecols>
+    <treechildren id="container">
+    </treechildren>
+  </tree>
+</dialog>
