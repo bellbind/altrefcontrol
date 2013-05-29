@@ -2,18 +2,37 @@
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 <dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         id="altrefcontrol-options"
-        style="min-width: 40em; min-height: 25em;"
+        style="min-width: 50em; min-height: 25em;"
         buttons="accept"
         title="altrefcontrol settings">
   <script src="options.js"/>
-  <tree id="tree" rows="20">
-    <treecols>
-      <treecol flex="1" label="domain"/>
-      <splitter/>
-      <treecol flex="1" label="value"/>
-      <treecol label="only 3rd party"/>
-    </treecols>
-    <treechildren id="container">
-    </treechildren>
-  </tree>
+
+  <listbox id="box" rows="15">
+    <listcols>
+      <listcol flex="2"/>
+      <listcol flex="2"/>
+      <listcol flex="1"/>
+      <listcol flex="1"/>
+    </listcols>
+    <listhead>
+      <listheader label="domain"/>
+      <listheader label="action"/>
+      <listheader label="only 3rd party"/>
+      <listheader label="delete"/>
+    </listhead>
+<!--
+    <listitem allowevents="true">
+      <textbox value="example.com" editable="true"/>
+      <menulist editable="true" label="@BLOCK">
+        <menupopup>
+          <menuitem label="@NORMAL" />
+          <menuitem label="@FORGE" />
+          <menuitem label="" />
+        </menupopup>
+      </menulist>
+      <checkbox checked="true"/>
+      <button label="delete"/>
+    </listitem>
+-->
+  </listbox>
 </dialog>

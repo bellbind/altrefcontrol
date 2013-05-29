@@ -22,32 +22,51 @@
         return conf;
     };
     
-    var createTreeItem = function (domain, action, only3rd) {
-        var item = document.createElement("treeitem");
-        var row = document.createElement("treerow");
-        var cellDomain = document.createElement("treecell");
-        var cellAction = document.createElement("treecell");
-        var cellOnly3rd = document.createElement("treecell");
-        cellDomain.setAttribute("label", domain);
+    var createItem = function (conf, domain) {
+        var value = conf[domain];
+        var action = value[0];
+        var only3rd = value[1];
+        
+        var item = document.createElement("listitem");
+        var cellDomain = document.createElement("textbox");
+        var cellAction = document.createElement("menulist");
+        var cellOnly3rd = document.createElement("checkbox");
+        var cellDelete = document.createElement("button");
+        var actionPopup = document.createElement("menupopup");
+        var actionNormal = document.createElement("menuitem");
+        var actionForge = document.createElement("menuitem");
+        var actionBlock = document.createElement("menuitem");
+        actionNormal.setAttribute("label", "@NORMAL");
+        actionForge.setAttribute("label", "@FORGE");
+        actionBlock.setAttribute("label", "");
+        actionPopup.appendChild(actionNormal);
+        actionPopup.appendChild(actionForge);
+        actionPopup.appendChild(actionBlock);
+        cellAction.appendChild(actionPopup);
+        
+        cellAction.appendChild(actionPopup);
+        cellDomain.setAttribute("value", domain);
         cellAction.setAttribute("label", action);
-        cellOnly3rd.setAttribute("value", only3rd);
-        cellOnly3rd.setAttribute("label", only3rd);
-        cellOnly3rd.setAttribute("editable", true);
-        row.appendChild(cellDomain);
-        row.appendChild(cellAction);
-        row.appendChild(cellOnly3rd);
-        item.appendChild(row);
+        cellAction.setAttribute("editable", true);
+        cellOnly3rd.setAttribute("checked", only3rd);
+        cellDelete.setAttribute("label", "delete");
+        item.appendChild(cellDomain);
+        item.appendChild(cellAction);
+        item.appendChild(cellOnly3rd);
+        item.appendChild(cellDelete);
+        item.setAttribute("allowevents", true);
         return item;
     };
     
     window.addEventListener("load", function (ev) {
-        var tree = document.getElementById("tree");
-        var container = document.getElementById("container");
+        var box = document.getElementById("box");
+        box.addEventListener("select", function (ev) {
+            ev.preventDefault();
+        }, true);
         var conf = loadConf();
         Object.keys(conf).forEach(function (key) {
-            var value = conf[key];
-            var item = createTreeItem(key, value[0], value[1]);
-            container.appendChild(item);
+            var item = createItem(conf, key);
+            box.appendChild(item);
         });
     }, false);
 })();
