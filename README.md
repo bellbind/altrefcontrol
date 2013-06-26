@@ -15,7 +15,7 @@ We made it from scratch.
 
 You can download latest altrefcontrol-x.y.z.xpi file from:
 
-- [latest xpi](https://dl.dropboxusercontent.com/u/14499563/altrefcontrol/altrefcontrol-0.2.8.xpi)
+- [latest xpi](https://dl.bintray.com/bellbind/altrefcontrol)
 
 (it may require permission to allow install from dropboxusercontent.com)
 

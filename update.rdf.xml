@@ -11,7 +11,7 @@
                 <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
                 <em:minVersion>3.6</em:minVersion>
                 <em:maxVersion>@@MAX_VERSION@@</em:maxVersion>
-                <em:updateLink>https://dl.dropboxusercontent.com/u/14499563//altrefcontrol/@@XPI@@</em:updateLink>
+                <em:updateLink>https://dl.bintray.com/bellbind/altrefcontrol/@@XPI@@</em:updateLink>
                 <em:updateHash>sha1:@@SHA1@@</em:updateHash>
               </Description>
             </em:targetApplication>
